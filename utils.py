@@ -44,7 +44,10 @@ def validate_file_extension(file, allowed_extensions: List[str]) -> bool:
     Returns:
         bool: True if valid, False otherwise.
     """
-    return any(file.name.lower().endswith(ext) for ext in allowed_extensions)
+    is_valid = any(file.name.lower().endswith(ext) for ext in allowed_extensions)
+    if not is_valid:
+        logger.warning(f"Invalid file extension for file: {file.name}")
+    return is_valid
 
 def clean_directory(directory: str):
     """

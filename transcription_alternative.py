@@ -5,6 +5,10 @@ import ffmpeg
 import streamlit as st
 import os
 
+@st.cache_resource
+def load_recognizer():
+    return sr.Recognizer()
+
 def extract_audio_ffmpeg(video_path: str, audio_path: str) -> str:
     """
     Extracts audio from the given video file and saves it as a WAV file.
@@ -26,10 +30,7 @@ def extract_audio_ffmpeg(video_path: str, audio_path: str) -> str:
         )
         return audio_path
     except ffmpeg.Error as e:
-        if e.stderr:
-            error_message = e.stderr.decode()
-        else:
-            error_message = "An unknown error occurred during audio extraction."
+        error_message = e.stderr.decode() if e.stderr else "An unknown error occurred during audio extraction."
         st.error(f"FFmpeg error: {error_message}")
         return None
     except Exception as e:
@@ -46,7 +47,7 @@ def transcribe_audio_speech_recognition(audio_path: str) -> str:
     Returns:
         str: Transcribed text.
     """
-    recognizer = sr.Recognizer()
+    recognizer = load_recognizer()
     try:
         with sr.AudioFile(audio_path) as source:
             audio = recognizer.record(source)
