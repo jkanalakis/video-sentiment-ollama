@@ -1,0 +1,9 @@
+streamlit
+moviepy
+langchain
+ollama
+pydantic
+nltk
+textblob
+matplotlib
+pandas
