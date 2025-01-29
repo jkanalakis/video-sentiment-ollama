@@ -1,37 +1,57 @@
+# sentiment_analysis.py
+
+from typing import List
+from textblob import TextBlob
+import streamlit as st
+
 def analyze_sentiment(text: str) -> str:
     """
-    Analyzes the sentiment of the provided text using an LLM.
-
-    Args:
-        text (str): Text to analyze.
-
-    Returns:
-        str: Sentiment classification (e.g., Positive, Negative, Neutral).
+    Analyzes the sentiment of the given text and returns 'Positive', 'Negative', or 'Neutral'.
     """
-    response = ollama.chat(
-        model="llama3.2-3b",
-        messages=[
-            {
-                'role': 'user',
-                'content': f"Analyze the sentiment of the following text: \"{text}\". Respond with Positive, Negative, or Neutral."
-            }
-        ],
-        options={'temperature': 0}
-    )
-    return response['message']['content'].strip()
+    analysis = TextBlob(text)
+    polarity = analysis.sentiment.polarity
+    if polarity > 0:
+        return "Positive"
+    elif polarity < 0:
+        return "Negative"
+    else:
+        return "Neutral"
 
 def aggregate_sentiments(sentiment_results: List[str]) -> dict:
     """
-    Aggregates sentiment analysis results.
-
-    Args:
-        sentiment_results (List[str]): List of sentiment classifications.
-
-    Returns:
-        dict: Dictionary with sentiment counts.
+    Aggregates sentiment results into a dictionary with counts for each sentiment category.
     """
     sentiment_counts = {"Positive": 0, "Negative": 0, "Neutral": 0}
     for sentiment in sentiment_results:
         if sentiment in sentiment_counts:
             sentiment_counts[sentiment] += 1
     return sentiment_counts
+
+def split_transcript(transcript: str, max_length: int = 1000) -> List[str]:
+    """
+    Splits the transcript into chunks to facilitate sentiment analysis.
+
+    Args:
+        transcript (str): The full transcribed text.
+        max_length (int): Maximum number of characters per chunk.
+
+    Returns:
+        List[str]: A list of text chunks.
+    """
+    words = transcript.split()
+    chunks = []
+    current_chunk = []
+    current_length = 0
+
+    for word in words:
+        current_chunk.append(word)
+        current_length += len(word) + 1  # +1 for space
+        if current_length >= max_length:
+            chunks.append(' '.join(current_chunk))
+            current_chunk = []
+            current_length = 0
+
+    if current_chunk:
+        chunks.append(' '.join(current_chunk))
+
+    return chunks
